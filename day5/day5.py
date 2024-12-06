@@ -2,11 +2,13 @@ import typing
 
 class Rule:
     number = None
-    before = set()
-    after = set()
+    before = None
+    after = None
 
     def __init__(self, number) -> None:
         self.number = number
+        self.before = set()
+        self.after = set()
     
     def add_before(self, number):
         self.before.add(number)
@@ -38,23 +40,62 @@ with open('input.txt', 'r') as f:
             rulebook[rule[1]] = Rule(rule[1])
         rulebook[rule[1]].add_after(rule[0])
     
-    print(rulebook)
+    # print(rulebook)
+
+    incorrect_orders: list[list[int]] = []
 
     mid_page_sum = 0
     for m in magazines:
         correct = True
         pages = [int(x) for x in m.split(',')]
-        try:
-            for i in range(len(pages)):
-                if any([x in rulebook[pages[i]].after for x in pages[:i]]):
-                    correct = False
-                    break
-                if any([x in rulebook[pages[i]].before for x in pages[i+1:]]):
-                    correct = False
-                    break
-        except Exception as e:
-            print(e)
+        for i in range(len(pages)):
+            afters = []
+            for x in pages[:i]:
+                afters.append(x in rulebook[pages[i]].before)
+            if any(afters):
+                correct = False
+                break
+            befores = []
+            for x in pages[i+1:]:
+                befores.append(x in rulebook[pages[i]].after)
+            if any(befores):
+                correct = False
+                break
         if correct:
-            mid_page_sum += pages[len(pages)//2+1]
+            mid_page_sum += pages[len(pages)//2]
+        else:
+            incorrect_orders.append(pages.copy())
 
     print(mid_page_sum)
+
+    corrected_mid_sum_pages = 0
+    for pages in incorrect_orders:
+        correct = False
+        while not correct:
+            for i in range(len(pages)):
+                afters = []
+                for x in pages[:i]:
+                    afters.append(x in rulebook[pages[i]].before)
+                    if afters[-1]:
+                        x_index = pages.index(x)
+                        tmp = pages[i]
+                        pages[i] = x
+                        pages[x_index] = tmp
+                        break
+                if len(afters) > 0 and afters[-1]:
+                    break
+                befores = []
+                for x in pages[i+1:]:
+                    befores.append(x in rulebook[pages[i]].after)
+                    if befores[-1]:
+                        x_index = pages.index(x)
+                        tmp = pages[i]
+                        pages[i] = x
+                        pages[x_index] = tmp
+                if len(befores) > 0 and befores[-1]:
+                    break
+            if not (any(afters) or any(befores)):
+                correct = True
+        corrected_mid_sum_pages += pages[len(pages)//2]
+    
+    print(corrected_mid_sum_pages)
