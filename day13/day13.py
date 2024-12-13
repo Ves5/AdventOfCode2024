@@ -6,6 +6,7 @@ with open('input.txt', 'r') as f:
     buttons_prizes = []
 
     token_price = 0
+    token_price2 = 0
 
     for i in range(0, len(lines), 4):
         a = [int(x) for x in re.findall(r"[0-9]+", lines[i])]
@@ -24,8 +25,16 @@ with open('input.txt', 'r') as f:
         
         if min_token != 9999:
             token_price += min_token
+            
+        det = a[0] * b[1] - a[1] * b[0]
+        xa = int((p2[0] * b[1] - p2[1] * b[0]) / det)
+        xb = int((p2[1] * a[0] - p2[0] * a[1]) / det)
+        
+        if xa * a[0] + b[0] * xb == p2[0] and xa * a[1] + b[1] * xb == p2[1]:
+            token_price2 += 3*xa + xb
     
     print(token_price)
+    print(token_price2)
 
     # part2 linear programming goes brrr, or something, idk how to code that :)
     
